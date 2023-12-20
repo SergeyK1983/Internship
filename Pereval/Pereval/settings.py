@@ -90,7 +90,7 @@ load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('FSTR_DB_NAME', ),
         'USER': os.getenv('FSTR_DB_LOGIN', ),
         'PASSWORD': os.getenv('FSTR_DB_PASS', ),
@@ -142,6 +142,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'  # формат для Django 3+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
