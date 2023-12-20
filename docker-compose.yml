@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  FSTR_pgdb:
+    container_name: FSTR_pgdb
+    image: postgres:15.4-alpine
+    restart: always
+    env_file:
+      - ./Pereval/.env
+    environment:
+      - POSTGRES_PASSWORD=$${FSTR_DB_PASS}
+      - POSTGRES_USER=$${FSTR_DB_LOGIN}
+      - POSTGRES_DB=$${FSTR_DB_NAME}
+    volumes:
+      - ./Pereval/pgdata:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
