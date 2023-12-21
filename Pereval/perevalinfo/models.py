@@ -36,7 +36,7 @@ class PerevalAdded(models.Model):
     beautyTitle = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     other_titles = models.CharField(max_length=255)
-    connect = models.CharField(max_length=1, default=" ")  # не понятное поле по заданию
+    connect = models.CharField(max_length=1, default=" ")  # непонятное поле по заданию
     add_time = models.DateTimeField(auto_now_add=True, verbose_name='Дата загрузки')
     status = models.CharField(max_length=2, choices=STATUS, default=NEW, verbose_name='Состояние')
     coord_id = models.ForeignKey(to='Coords', related_name='coord', on_delete=models.CASCADE, verbose_name='Координаты')

@@ -1,4 +1,7 @@
 .idea
 /temp
+
 /Pereval/.env
-/Pereval/pgdata/
+
+/Pereval/pgdata
+/Pereval/media/perevalinfo/*/
