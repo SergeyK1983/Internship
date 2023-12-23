@@ -44,7 +44,7 @@ class PerevalAdded(models.Model):
                                  verbose_name='Сложность')
 
     def __str__(self):
-        return f"{self.pk}: {self.beautyTitle}"
+        return f"{self.pk}- {self.beautyTitle}"
 
 
 class Coords(models.Model):
