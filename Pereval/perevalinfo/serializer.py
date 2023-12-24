@@ -49,7 +49,7 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
     """
     Для создания записи в БД по форме от клиента
     """
-    pereval = UsersSerializer(label='Отправитель', required=True, many=False)
+    users_id = UsersSerializer(label='Отправитель')
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')
     images = PerevalImagesSerializer(label='Фотография')
@@ -59,27 +59,35 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerevalAdded
         fields = (
-            'beautyTitle',
+            'beauty_title',
             'title',
             'other_titles',
             'connect',
-            'pereval',  # по related_name='pereval'
+            'users_id',
             'coord_id',
             'level_id',
-            'images',
+            'images',  # по related_name
             'status',
         )
         # extra_kwargs = {
-        #     'images':
+        #     'beauty_title': {'initial': "Горы"}
         # }
 
     def create(self, validated_data):
         v_data = validated_data
+        print(v_data)
 
+        ordered_dict_users = v_data['users_id']
         ordered_dict_coord = v_data['coord_id']
         ordered_dict_level = v_data['level_id']
-        ordered_dict_pereval = v_data.pop('pereval')
         ordered_dict_images = v_data.pop('images')
+
+        def users_create(ordered_dict):
+            print(ordered_dict)
+            users = Users(**ordered_dict)
+            users.save()
+            instance = Users.objects.all().last()
+            return instance
 
         def coord_create(ordered_dict):
             coord = Coords(**ordered_dict)
@@ -93,15 +101,16 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
             instance = DifficultyLevel.objects.all().last()
             return instance
 
+        users_id = users_create(ordered_dict_users)
         coord_id = coord_create(ordered_dict_coord)
         level_id = level_create(ordered_dict_level)
-        v_data.update({'coord_id': coord_id, 'level_id': level_id})
+        v_data.update({'coord_id': coord_id, 'level_id': level_id, 'users_id': users_id})
 
         perevaladded = PerevalAdded.objects.create(**v_data)
         pereval = PerevalAdded.objects.get(id=perevaladded.id)
 
-        us = Users(pereval_id=pereval, **ordered_dict_pereval)
-        us.save(force_insert=True)
+        # us = Users(pereval_id=pereval, **ordered_dict_pereval)
+        # us.save(force_insert=True)
 
         # Users.objects.manager.create(pereval_id=perevaladded, **ordered_dict_pereval)
         PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
