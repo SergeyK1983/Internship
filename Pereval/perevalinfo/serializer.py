@@ -46,6 +46,9 @@ class PerevalImagesSerializer(serializers.ModelSerializer):
 
 
 class PerevalAddedSerializer(serializers.ModelSerializer):
+    """
+    Для создания записи в БД по форме от клиента
+    """
     pereval = UsersSerializer(label='Отправитель', required=True, many=False)
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')

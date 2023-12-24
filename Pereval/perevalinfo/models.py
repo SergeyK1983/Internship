@@ -10,8 +10,6 @@ class Users(models.Model):
     full_name = models.CharField(max_length=150, verbose_name="ФИО")
     email = models.EmailField(max_length=100, unique=True, verbose_name="Почта")
     phone = models.CharField(max_length=20, verbose_name="Телефон")
-    pereval_id = models.ForeignKey(to='PerevalAdded', related_name='pereval', on_delete=models.CASCADE,
-                                   verbose_name='Доб. перевалы')
 
     def __str__(self):
         return f"{self.pk}: {self.full_name}"
@@ -21,10 +19,10 @@ class PerevalAdded(models.Model):
     """
     Добавленная информация о перевалах
     """
-    NEW = 'NE'  # при добавлении по умолчанию
-    PENDING = 'PE'  # модератор взял в работу
+    NEW = 'NW'  # при добавлении по умолчанию
+    PENDING = 'PN'  # модератор взял в работу
     ACCEPTED = 'AC'  # модерация прошла успешно
-    REJECTED = 'RE'  # модерация прошла, информация не принята
+    REJECTED = 'RJ'  # модерация прошла, информация не принята
 
     STATUS = [
         (NEW, 'Новый'),
@@ -33,18 +31,20 @@ class PerevalAdded(models.Model):
         (REJECTED, 'Не принято'),
     ]
 
-    beautyTitle = models.CharField(max_length=255)
+    beauty_title = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     other_titles = models.CharField(max_length=255)
     connect = models.CharField(max_length=1, default=" ")  # непонятное поле по заданию
     add_time = models.DateTimeField(auto_now_add=True, verbose_name='Дата загрузки')
     status = models.CharField(max_length=2, choices=STATUS, default=NEW, verbose_name='Состояние')
-    coord_id = models.ForeignKey(to='Coords', related_name='coord', on_delete=models.CASCADE, verbose_name='Координаты')
-    level_id = models.ForeignKey(to='DifficultyLevel', related_name='level', on_delete=models.CASCADE,
+    users_id = models.ForeignKey(to=Users, related_name='pereval_user', on_delete=models.CASCADE, verbose_name='Автор')
+    coord_id = models.OneToOneField(to='Coords', related_name='pereval_coord', on_delete=models.CASCADE,
+                                    verbose_name='Координаты')
+    level_id = models.ForeignKey(to='DifficultyLevel', related_name='pereval_level', on_delete=models.CASCADE,
                                  verbose_name='Сложность')
 
     def __str__(self):
-        return f"{self.pk}- {self.beautyTitle}"
+        return f"{self.pk}- {self.beauty_title}"
 
 
 class Coords(models.Model):
@@ -66,10 +66,25 @@ class DifficultyLevel(models.Model):
     """
     Уровни сложности в разное время года
     """
-    winter = models.CharField(max_length=10, blank=True, null=True, verbose_name="Зима")
-    spring = models.CharField(max_length=10, blank=True, null=True, verbose_name="Весна")
-    summer = models.CharField(max_length=10, blank=True, null=True, verbose_name="Лето")
-    autumn = models.CharField(max_length=10, blank=True, null=True, verbose_name="Осень")
+    LEVEL1 = 'LV1'
+    LEVEL2 = 'LV2'
+    LEVEL3 = 'LV3'
+    LEVEL4 = 'LV4'
+    LEVEL5 = 'LV5'
+    LEVEL6 = 'LV6'
+    LEVELS = [
+        (LEVEL1, '1А'),
+        (LEVEL2, '1Б'),
+        (LEVEL3, '2А'),
+        (LEVEL4, '2Б'),
+        (LEVEL5, '3А'),
+        (LEVEL6, '3Б'),
+    ]
+
+    winter = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Зима")
+    spring = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Весна")
+    summer = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Лето")
+    autumn = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Осень")
 
     def __str__(self):
         return f"сложность: {self.pk}"
@@ -80,6 +95,7 @@ class PerevalImages(models.Model):
     Фотографии перевалов
     """
     images = models.ImageField(upload_to=post_media_directory_path, blank=True, null=True, verbose_name="Фото")
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name="Название")
     pereval_id = models.ForeignKey(to=PerevalAdded, related_name='images', on_delete=models.CASCADE,
                                   verbose_name='Фотографии')
 
