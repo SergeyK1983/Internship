@@ -5,6 +5,8 @@ from .models import Users, PerevalAdded, Coords, DifficultyLevel, PerevalImages
 
 
 class UsersSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=100, label='Почта')
+
     class Meta:
         model = Users
         fields = (
@@ -27,6 +29,11 @@ class CoordsSerializer(serializers.ModelSerializer):
 
 
 class DifficultyLevelSerializer(serializers.ModelSerializer):
+    winter = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Зима')
+    spring = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Весна')
+    summer = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Лето')
+    autumn = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Осень')
+
     class Meta:
         model = DifficultyLevel
         fields = (
@@ -36,13 +43,14 @@ class DifficultyLevelSerializer(serializers.ModelSerializer):
             'autumn',
         )
 
+    def get_winter(self, obj):
+        return obj.get_winter_display()
 
-class PerevalImagesSerializer(serializers.ModelSerializer):
+
+class ImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerevalImages
-        fields = (
-            'images',
-        )
+        fields = ['images', 'title']
 
 
 class PerevalAddedSerializer(serializers.ModelSerializer):
@@ -52,8 +60,8 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
     users_id = UsersSerializer(label='Отправитель')
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')
-    images = PerevalImagesSerializer(label='Фотография')
-    # images = PerevalImagesSerializer(label='Фотография', many=True)
+    # images = ImagesSerializer(label='Фотография')
+    images = ImagesSerializer(label='Фотография', many=True)
     # status = serializers.ChoiceField(choices=)
 
     class Meta:
@@ -69,9 +77,12 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
             'images',  # по related_name
             'status',
         )
-        # extra_kwargs = {
-        #     'beauty_title': {'initial': "Горы"}
-        # }
+        read_only_fields = ('status', )
+        extra_kwargs = {
+            # 'status': PerevalAdded.STATUS,
+            # 'beauty_title': {'initial': "Горы"},
+            # 'images': ['images1', 'images2', 'images3'],
+        }
 
     def create(self, validated_data):
         v_data = validated_data
@@ -83,23 +94,21 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         ordered_dict_images = v_data.pop('images')
 
         def users_create(ordered_dict):
-            print(ordered_dict)
+            if Users.objects.filter(email=ordered_dict['email']).exists():
+                return Users.objects.get(email=ordered_dict['email'])
             users = Users(**ordered_dict)
             users.save()
-            instance = Users.objects.all().last()
-            return instance
+            return users
 
         def coord_create(ordered_dict):
             coord = Coords(**ordered_dict)
             coord.save()
-            instance = Coords.objects.all().last()
-            return instance
+            return coord
 
         def level_create(ordered_dict):
             level = DifficultyLevel(**ordered_dict)
             level.save()
-            instance = DifficultyLevel.objects.all().last()
-            return instance
+            return level
 
         users_id = users_create(ordered_dict_users)
         coord_id = coord_create(ordered_dict_coord)
@@ -107,13 +116,11 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         v_data.update({'coord_id': coord_id, 'level_id': level_id, 'users_id': users_id})
 
         perevaladded = PerevalAdded.objects.create(**v_data)
-        pereval = PerevalAdded.objects.get(id=perevaladded.id)
+        # PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
 
-        # us = Users(pereval_id=pereval, **ordered_dict_pereval)
-        # us.save(force_insert=True)
-
-        # Users.objects.manager.create(pereval_id=perevaladded, **ordered_dict_pereval)
-        PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
+        for images_dict in ordered_dict_images:
+            print(images_dict)
+            PerevalImages.objects.create(pereval_id=perevaladded, **images_dict)
 
         return perevaladded
 

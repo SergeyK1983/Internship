@@ -11,13 +11,13 @@ class PerevalAddedCreate(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        pereval = PerevalAddedSerializer(data=request.data)
+        serializer = PerevalAddedSerializer(data=request.data)
 
-        if pereval.is_valid(raise_exception=True):
-            pereval.save()
-
-        return Response(pereval.data, status=status.HTTP_201_CREATED)
-
-#  post_a_job_serializer = PostAJobSerializer(data=request.data)
-#  return Response(post_a_job_serializer.data, status=status.HTTP_201_CREATED)
-#  return Response(post_a_job_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            print(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        elif status.HTTP_400_BAD_REQUEST:
+            return Response(serializer.errors, status={'status': status.HTTP_400_BAD_REQUEST, 'message': 'Плохой запрос BAD_REQUEST'})
+        else:
+            return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
