@@ -1,5 +1,7 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 from .services import post_media_directory_path
 
 
@@ -19,24 +21,30 @@ class PerevalAdded(models.Model):
     """
     Добавленная информация о перевалах
     """
-    NEW = 'NW'  # при добавлении по умолчанию
-    PENDING = 'PN'  # модератор взял в работу
-    ACCEPTED = 'AC'  # модерация прошла успешно
-    REJECTED = 'RJ'  # модерация прошла, информация не принята
-
-    STATUS = [
-        (NEW, 'Новый'),
-        (PENDING, 'В работе'),
-        (ACCEPTED, 'Принято'),
-        (REJECTED, 'Не принято'),
-    ]
+    # NEW = 'NW'  # при добавлении по умолчанию
+    # PENDING = 'PN'  # модератор взял в работу
+    # ACCEPTED = 'AC'  # модерация прошла успешно
+    # REJECTED = 'RJ'  # модерация прошла, информация не принята
+    #
+    # STATUS = [
+    #     (NEW, 'Новый'),
+    #     (PENDING, 'В работе'),
+    #     (ACCEPTED, 'Принято'),
+    #     (REJECTED, 'Не принято'),
+    # ]
+    class Status(models.TextChoices):
+        # A .label property is added on values, to return the human-readable name.
+        NEW = "NW", _("Новый")  # при добавлении по умолчанию
+        PENDING = "PN", _("В работе")  # модератор взял в работу
+        ACCEPTED = "AC", _("Принято")  # модерация прошла успешно
+        REJECTED = "RJ", _("Не принято")  # модерация прошла, информация не принята
 
     beauty_title = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     other_titles = models.CharField(max_length=255)
-    connect = models.CharField(max_length=1, default=" ")  # непонятное поле по заданию
+    connect = models.CharField(max_length=1, default="")  # непонятное поле по заданию
     add_time = models.DateTimeField(auto_now_add=True, verbose_name='Дата загрузки')
-    status = models.CharField(max_length=2, choices=STATUS, default=NEW, verbose_name='Состояние')
+    status = models.CharField(max_length=2, choices=Status.choices, default=Status.NEW, verbose_name='Состояние')
     users_id = models.ForeignKey(to=Users, related_name='pereval_user', on_delete=models.CASCADE, verbose_name='Автор')
     coord_id = models.OneToOneField(to='Coords', related_name='pereval_coord', on_delete=models.CASCADE,
                                     verbose_name='Координаты')
@@ -66,25 +74,27 @@ class DifficultyLevel(models.Model):
     """
     Уровни сложности в разное время года
     """
-    LEVEL1 = 'LV1'
-    LEVEL2 = 'LV2'
-    LEVEL3 = 'LV3'
-    LEVEL4 = 'LV4'
-    LEVEL5 = 'LV5'
-    LEVEL6 = 'LV6'
-    LEVELS = [
-        (LEVEL1, '1А'),
-        (LEVEL2, '1Б'),
-        (LEVEL3, '2А'),
-        (LEVEL4, '2Б'),
-        (LEVEL5, '3А'),
-        (LEVEL6, '3Б'),
-    ]
+    class Levels(models.TextChoices):
+        # A .label property is added on values, to return the human-readable name.
+        LEVEL1 = "LV1", _("1А")
+        LEVEL2 = "LV2", _("1Б")
+        LEVEL3 = "LV3", _("2А")
+        LEVEL4 = "LV4", _("2Б")
+        LEVEL5 = "LV5", _("3А")
+        LEVEL6 = "LV6", _("3Б")
 
-    winter = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Зима")
-    spring = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Весна")
-    summer = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Лето")
-    autumn = models.CharField(max_length=3, choices=LEVELS, default=LEVEL1, blank=True, null=True, verbose_name="Осень")
+    winter = models.CharField(max_length=3, choices=Levels.choices, default=Levels.LEVEL1, blank=True, null=True,
+                              verbose_name="Зима")
+    spring = models.CharField(max_length=3, choices=Levels.choices, default=Levels.LEVEL1, blank=True, null=True,
+                              verbose_name="Весна")
+    summer = models.CharField(max_length=3, choices=Levels.choices, default=Levels.LEVEL1, blank=True, null=True,
+                              verbose_name="Лето")
+    autumn = models.CharField(max_length=3, choices=Levels.choices, default=Levels.LEVEL1, blank=True, null=True,
+                              verbose_name="Осень")
+
+    # def is_upperclass(self):  # get_winter_display
+    #     return self.winter in {self.Levels.LEVEL1, self.Levels.LEVEL2, self.Levels.LEVEL3, self.Levels.LEVEL4,
+    #     self.Levels.LEVEL5, self.Levels.LEVEL6}
 
     def __str__(self):
         return f"сложность: {self.pk}"
@@ -97,8 +107,7 @@ class PerevalImages(models.Model):
     images = models.ImageField(upload_to=post_media_directory_path, blank=True, null=True, verbose_name="Фото")
     title = models.CharField(max_length=100, blank=True, null=True, verbose_name="Название")
     pereval_id = models.ForeignKey(to=PerevalAdded, related_name='images', on_delete=models.CASCADE,
-                                  verbose_name='Фотографии')
+                                   verbose_name='Фотографии')
 
     def __str__(self):
         return f"фото: {self.pk}"
-

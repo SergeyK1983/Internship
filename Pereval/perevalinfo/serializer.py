@@ -29,10 +29,10 @@ class CoordsSerializer(serializers.ModelSerializer):
 
 
 class DifficultyLevelSerializer(serializers.ModelSerializer):
-    winter = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Зима')
-    spring = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Весна')
-    summer = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Лето')
-    autumn = serializers.ChoiceField(choices=DifficultyLevel.LEVELS, label='Осень')
+    winter = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Зима')  # source='get_winter_display'
+    spring = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Весна')
+    summer = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Лето')
+    autumn = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Осень')
 
     class Meta:
         model = DifficultyLevel
@@ -43,8 +43,8 @@ class DifficultyLevelSerializer(serializers.ModelSerializer):
             'autumn',
         )
 
-    def get_winter(self, obj):
-        return obj.get_winter_display()
+    # def get_winter(self, obj):
+    #     return obj.get_winter_display()
 
 
 class ImagesSerializer(serializers.ModelSerializer):
@@ -62,7 +62,7 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
     level_id = DifficultyLevelSerializer(label='Уровень сложности')
     # images = ImagesSerializer(label='Фотография')
     images = ImagesSerializer(label='Фотография', many=True)
-    # status = serializers.ChoiceField(choices=)
+    # status = serializers.ChoiceField(choices=PerevalAdded.Status.labels, label='Статус', initial="Новый", read_only=True)
 
     class Meta:
         model = PerevalAdded
@@ -79,15 +79,12 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('status', )
         extra_kwargs = {
-            # 'status': PerevalAdded.STATUS,
+            'status': {'choices': PerevalAdded.Status.labels, },
             # 'beauty_title': {'initial': "Горы"},
-            # 'images': ['images1', 'images2', 'images3'],
         }
 
     def create(self, validated_data):
         v_data = validated_data
-        print(v_data)
-
         ordered_dict_users = v_data['users_id']
         ordered_dict_coord = v_data['coord_id']
         ordered_dict_level = v_data['level_id']
@@ -119,7 +116,6 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         # PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
 
         for images_dict in ordered_dict_images:
-            print(images_dict)
             PerevalImages.objects.create(pereval_id=perevaladded, **images_dict)
 
         return perevaladded

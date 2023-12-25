@@ -1,9 +1,15 @@
 from django.shortcuts import render
+from rest_framework.exceptions import APIException
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from .models import Users, PerevalAdded, Coords, DifficultyLevel, PerevalImages
 from .serializer import PerevalAddedSerializer
+
+
+# def test_raise(request):
+#     if request.data['title'] == 'горы':
+#         raise APIException('Не прикольное название')
 
 
 class PerevalAddedCreate(generics.CreateAPIView):
@@ -13,11 +19,15 @@ class PerevalAddedCreate(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = PerevalAddedSerializer(data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            print(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif status.HTTP_400_BAD_REQUEST:
-            return Response(serializer.errors, status={'status': status.HTTP_400_BAD_REQUEST, 'message': 'Плохой запрос BAD_REQUEST'})
-        else:
-            return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if not serializer.is_valid():
+            data = {'error': 'что-то пошло не так ...', 'status': 'HTTP_400_BAD_REQUEST'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.is_valid():  # raise_exception=True
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except APIException:
+                data = {'error': 'сервер издох', 'status': 'HTTP_500_INTERNAL_SERVER_ERROR'}
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
