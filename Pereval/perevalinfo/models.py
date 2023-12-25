@@ -21,17 +21,6 @@ class PerevalAdded(models.Model):
     """
     Добавленная информация о перевалах
     """
-    # NEW = 'NW'  # при добавлении по умолчанию
-    # PENDING = 'PN'  # модератор взял в работу
-    # ACCEPTED = 'AC'  # модерация прошла успешно
-    # REJECTED = 'RJ'  # модерация прошла, информация не принята
-    #
-    # STATUS = [
-    #     (NEW, 'Новый'),
-    #     (PENDING, 'В работе'),
-    #     (ACCEPTED, 'Принято'),
-    #     (REJECTED, 'Не принято'),
-    # ]
     class Status(models.TextChoices):
         # A .label property is added on values, to return the human-readable name.
         NEW = "NW", _("Новый")  # при добавлении по умолчанию
