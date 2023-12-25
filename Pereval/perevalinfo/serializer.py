@@ -13,9 +13,7 @@ class UsersSerializer(serializers.ModelSerializer):
             'full_name',
             'email',
             'phone',
-            # 'pereval_id'
         )
-        # read_only_fields = ('pereval_id', )
 
 
 class CoordsSerializer(serializers.ModelSerializer):
@@ -43,9 +41,6 @@ class DifficultyLevelSerializer(serializers.ModelSerializer):
             'autumn',
         )
 
-    # def get_winter(self, obj):
-    #     return obj.get_winter_display()
-
 
 class ImagesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,9 +55,7 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
     users_id = UsersSerializer(label='Отправитель')
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')
-    # images = ImagesSerializer(label='Фотография')
     images = ImagesSerializer(label='Фотография', many=True)
-    # status = serializers.ChoiceField(choices=PerevalAdded.Status.labels, label='Статус', initial="Новый", read_only=True)
 
     class Meta:
         model = PerevalAdded
@@ -80,7 +73,6 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         read_only_fields = ('status', )
         extra_kwargs = {
             'status': {'choices': PerevalAdded.Status.labels, },
-            # 'beauty_title': {'initial': "Горы"},
         }
 
     def create(self, validated_data):
@@ -113,10 +105,8 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
         v_data.update({'coord_id': coord_id, 'level_id': level_id, 'users_id': users_id})
 
         perevaladded = PerevalAdded.objects.create(**v_data)
-        # PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
 
         for images_dict in ordered_dict_images:
             PerevalImages.objects.create(pereval_id=perevaladded, **images_dict)
 
         return perevaladded
-
