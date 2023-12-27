@@ -116,6 +116,17 @@ class PerevalIDListSerializer(serializers.ModelSerializer):
     """
     Для вывода информации о перевале по его id
     """
+    class Meta:
+        model = PerevalAdded
+        fields = (
+            'id',
+        )
+
+
+class PerevalIDDetailSerializer(serializers.ModelSerializer):
+    """
+    Для вывода информации о перевале по его id и по email
+    """
     users_id = UsersSerializer(label='Отправитель')
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')

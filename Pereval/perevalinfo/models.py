@@ -33,7 +33,7 @@ class PerevalAdded(models.Model):
     other_titles = models.CharField(max_length=255)
     connect = models.CharField(max_length=1, default="")  # непонятное поле по заданию
     add_time = models.DateTimeField(auto_now_add=True, verbose_name='Дата загрузки')
-    status = models.CharField(max_length=2, choices=Status.choices, default=Status.NEW, verbose_name='Состояние')
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.labels[0], verbose_name='Состояние')  # нормально не писалось в БД, возможно из-за того, что был max_length=2
     users_id = models.ForeignKey(to=Users, related_name='pereval_user', on_delete=models.CASCADE, verbose_name='Автор')
     coord_id = models.OneToOneField(to='Coords', related_name='pereval_coord', on_delete=models.CASCADE,
                                     verbose_name='Координаты')
