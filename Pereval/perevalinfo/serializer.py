@@ -110,3 +110,28 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
             PerevalImages.objects.create(pereval_id=perevaladded, **images_dict)
 
         return perevaladded
+
+
+class PerevalIDListSerializer(serializers.ModelSerializer):
+    """
+    Для вывода информации о перевале по его id
+    """
+    users_id = UsersSerializer(label='Отправитель')
+    coord_id = CoordsSerializer(label='Координаты')
+    level_id = DifficultyLevelSerializer(label='Уровень сложности')
+    images = ImagesSerializer(label='Фотография', many=True)
+
+    class Meta:
+        model = PerevalAdded
+        fields = (
+            'id',
+            'beauty_title',
+            'title',
+            'other_titles',
+            'connect',
+            'users_id',
+            'coord_id',
+            'level_id',
+            'images',  # по related_name
+            'status',
+        )

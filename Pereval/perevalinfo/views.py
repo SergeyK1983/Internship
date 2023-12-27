@@ -2,7 +2,29 @@ from rest_framework.exceptions import APIException
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from .serializer import PerevalAddedSerializer
+from .models import PerevalAdded
+from .serializer import PerevalAddedSerializer, PerevalIDListSerializer
+
+
+class PerevalList(generics.ListAPIView):
+    """
+    Контроллер GET-запроса на вывод информации о всех перевалах в БД
+    """
+    queryset = PerevalAdded.objects.all()
+    serializer_class = PerevalIDListSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class PerevalIDList(generics.ListAPIView):
+    """
+    Контроллер GET-запроса на вывод информации о перевале по его id
+    """
+    serializer_class = PerevalIDListSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = PerevalAdded.objects.filter(pk=self.kwargs['pk'])
+        return queryset
 
 
 class PerevalAddedCreate(generics.CreateAPIView):
