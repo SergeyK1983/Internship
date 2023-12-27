@@ -16,7 +16,7 @@ class PerevalAddedCreate(generics.CreateAPIView):
         serializer = PerevalAddedSerializer(data=request.data)
 
         if not serializer.is_valid():
-            data = {'error': 'что-то пошло не так ...', 'status': 'HTTP_400_BAD_REQUEST'}
+            data = {'error': 'Что-то пошло не так ...', 'status': 'HTTP_400_BAD_REQUEST'}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():  # raise_exception=True
@@ -24,6 +24,6 @@ class PerevalAddedCreate(generics.CreateAPIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except APIException:
-                data = {'error': 'сервер издох', 'status': 'HTTP_500_INTERNAL_SERVER_ERROR'}
+                data = {'error': 'Сервер не отвечает.', 'status': 'HTTP_500_INTERNAL_SERVER_ERROR'}
                 return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
