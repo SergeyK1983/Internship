@@ -164,10 +164,41 @@ class PerevalUpdateModeratorSerializer(MixinPereval, serializers.ModelSerializer
     level_id = DifficultyLevelSerializer(label='Уровень сложности', read_only=True)
     images = ImagesSerializer(label='Фотография', many=True, read_only=True)
 
-    meta_pereval = MixinPereval
-    meta_pereval.Meta.read_only_fields.extend(['beauty_title', 'title', 'other_titles', 'connect'])
+    class Meta(MixinPereval.Meta):
+        read_only_fields = ['beauty_title', 'title', 'other_titles', 'connect']
 
-    # def update(self, instance, validated_data):
-    #     instance.beauty_title = validated_data.get('beauty_title', instance.beauty_title)
-    #     print(validated_data)
-    #     return instance
+
+class PerevalUpdateUsersSerializer(MixinPereval, serializers.ModelSerializer):
+    """
+    Для изменения добавленной информации пока в статусе "Новое"
+    """
+    users_id = UsersSerializer(label='Отправитель', read_only=True)
+    # level_id = DifficultyLevelSerializer(label='Уровень сложности', read_only=True)
+    images = ImagesSerializer(label='Фотография', many=True, read_only=True)
+
+    class Meta(MixinPereval.Meta):
+        read_only_fields = ['status', ]
+
+    def update(self, instance, validated_data):
+        instance.beauty_title = validated_data['beauty_title']
+        instance.title = validated_data['title']
+        instance.other_titles = validated_data['other_titles']
+        instance.connect = validated_data['connect']
+
+        instance.coord_id.latitude = validated_data['coord_id'].get('latitude')
+        instance.coord_id.longitude = validated_data['coord_id'].get('longitude')
+        instance.coord_id.height = validated_data['coord_id'].get('height')
+
+        instance.level_id.winter = validated_data['level_id'].get('winter')
+        instance.level_id.spring = validated_data['level_id'].get('spring')
+        instance.level_id.summer = validated_data['level_id'].get('summer')
+        instance.level_id.autumn = validated_data['level_id'].get('autumn')
+        # instance.level_id.winter = validated_data.get('level_id.winter', instance.level_id.winter)
+        # instance.level_id.spring = validated_data.get('level_id.spring', instance.level_id.spring)
+        # instance.level_id.summer = validated_data.get('level_id.summer', instance.level_id.summer)
+        # instance.level_id.autumn = validated_data.get('level_id.autumn', instance.level_id.autumn)
+        print(instance.level_id.winter)
+        print(validated_data)
+        fields = ['beauty_title', 'title', 'other_titles', 'connect', 'level_id.winter', 'coord_id.latitude']
+        instance.save(update_fields=fields)  # update_fields=fields
+        return instance
