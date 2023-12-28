@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import PerevalAdded, Users
-from .serializer import PerevalAddedSerializer, PerevalIDListSerializer, PerevalIDDetailSerializer, UsersSerializer
+from .serializer import PerevalAddedSerializer, PerevalIDListSerializer, PerevalIDDetailSerializer, UsersSerializer, \
+    PerevalUpdateModeratorSerializer
 
 
 class PerevalIDList(generics.ListAPIView):
@@ -18,7 +19,19 @@ class PerevalIDList(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-class PerevalDetailListAPI(APIView):
+class PerevalUpdateModeratorAPI(generics.RetrieveUpdateAPIView):
+    """
+    Контроллер PUT-запроса на обновление статуса обработки поступившей информации о перевале
+    """
+    serializer_class = PerevalUpdateModeratorSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = PerevalAdded.objects.filter(pk=self.kwargs['pk'])
+        return queryset
+
+
+class PerevalDetailAPI(APIView):
     """
     Контроллер GET-запроса на вывод информации о перевале по его id
     """
@@ -30,9 +43,9 @@ class PerevalDetailListAPI(APIView):
         return obj
 
     def get(self, request, pk, format=None):
-        det = self.get_object(pk)
-        data = PerevalIDDetailSerializer(det)
-        return Response(data.data)
+        pereval = self.get_object(pk)
+        serializer = PerevalIDDetailSerializer(pereval)
+        return Response(serializer.data)
 
 
 class PerevalEmailListAPI(generics.ListAPIView):

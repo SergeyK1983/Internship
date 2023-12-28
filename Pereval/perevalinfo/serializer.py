@@ -114,7 +114,7 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
 
 class PerevalIDListSerializer(serializers.ModelSerializer):
     """
-    Для вывода информации о перевале по его id
+    Для вывода всех id записей в БД по модели PerevalAdded
     """
     class Meta:
         model = PerevalAdded
@@ -123,10 +123,7 @@ class PerevalIDListSerializer(serializers.ModelSerializer):
         )
 
 
-class PerevalIDDetailSerializer(serializers.ModelSerializer):
-    """
-    Для вывода информации о перевале по его id и по email
-    """
+class MixinPereval(serializers.ModelSerializer):
     users_id = UsersSerializer(label='Отправитель')
     coord_id = CoordsSerializer(label='Координаты')
     level_id = DifficultyLevelSerializer(label='Уровень сложности')
@@ -146,3 +143,31 @@ class PerevalIDDetailSerializer(serializers.ModelSerializer):
             'images',  # по related_name
             'status',
         )
+        read_only_fields = []
+        extra_kwargs = {
+            'status': {'choices': PerevalAdded.Status.labels, },
+        }
+
+
+class PerevalIDDetailSerializer(MixinPereval, serializers.ModelSerializer):
+    """
+    Для вывода информации о перевале по его id и по email
+    """
+
+
+class PerevalUpdateModeratorSerializer(MixinPereval, serializers.ModelSerializer):
+    """
+    Для изменения статуса проверки модератором
+    """
+    users_id = UsersSerializer(label='Отправитель', read_only=True)
+    coord_id = CoordsSerializer(label='Координаты', read_only=True)
+    level_id = DifficultyLevelSerializer(label='Уровень сложности', read_only=True)
+    images = ImagesSerializer(label='Фотография', many=True, read_only=True)
+
+    meta_pereval = MixinPereval
+    meta_pereval.Meta.read_only_fields.extend(['beauty_title', 'title', 'other_titles', 'connect'])
+
+    # def update(self, instance, validated_data):
+    #     instance.beauty_title = validated_data.get('beauty_title', instance.beauty_title)
+    #     print(validated_data)
+    #     return instance
