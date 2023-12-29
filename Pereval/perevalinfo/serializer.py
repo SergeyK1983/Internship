@@ -173,8 +173,7 @@ class PerevalUpdateUsersSerializer(MixinPereval, serializers.ModelSerializer):
     Для изменения добавленной информации пока в статусе "Новое"
     """
     users_id = UsersSerializer(label='Отправитель', read_only=True)
-    # level_id = DifficultyLevelSerializer(label='Уровень сложности', read_only=True)
-    images = ImagesSerializer(label='Фотография', many=True, read_only=True)
+    # images = ImagesSerializer(label='Фотография', many=True, read_only=True)
 
     class Meta(MixinPereval.Meta):
         read_only_fields = ['status', ]
@@ -185,20 +184,37 @@ class PerevalUpdateUsersSerializer(MixinPereval, serializers.ModelSerializer):
         instance.other_titles = validated_data['other_titles']
         instance.connect = validated_data['connect']
 
-        instance.coord_id.latitude = validated_data['coord_id'].get('latitude')
-        instance.coord_id.longitude = validated_data['coord_id'].get('longitude')
-        instance.coord_id.height = validated_data['coord_id'].get('height')
+        def update_coord(pereval, data):
+            coord = Coords.objects.get(id=pereval.coord_id.pk)
+            coord.latitude = data['coord_id'].get('latitude')
+            coord.longitude = data['coord_id'].get('longitude')
+            coord.height = data['coord_id'].get('height')
+            coord.save()
 
-        instance.level_id.winter = validated_data['level_id'].get('winter')
-        instance.level_id.spring = validated_data['level_id'].get('spring')
-        instance.level_id.summer = validated_data['level_id'].get('summer')
-        instance.level_id.autumn = validated_data['level_id'].get('autumn')
-        # instance.level_id.winter = validated_data.get('level_id.winter', instance.level_id.winter)
-        # instance.level_id.spring = validated_data.get('level_id.spring', instance.level_id.spring)
-        # instance.level_id.summer = validated_data.get('level_id.summer', instance.level_id.summer)
-        # instance.level_id.autumn = validated_data.get('level_id.autumn', instance.level_id.autumn)
-        print(instance.level_id.winter)
-        print(validated_data)
-        fields = ['beauty_title', 'title', 'other_titles', 'connect', 'level_id.winter', 'coord_id.latitude']
-        instance.save(update_fields=fields)  # update_fields=fields
+        update_coord(instance, validated_data)
+
+        def update_level(pereval, data):
+            level = DifficultyLevel.objects.get(id=pereval.level_id.pk)
+            level.winter = data['level_id'].get('winter')
+            level.spring = data['level_id'].get('spring')
+            level.summer = data['level_id'].get('summer')
+            level.autumn = data['level_id'].get('autumn')
+            level.save()
+
+        update_level(instance, validated_data)
+        # instance.level_id.winter = validated_data['level_id'].get('winter')   # так работает, но не сохраняет
+
+        def update_images(pereval, data):
+            query = PerevalImages.objects.filter(pereval_id=pereval.id)
+            i = 0
+            for inst in query:
+                inst.title = data['images'][i].get('title')
+                print(inst.title)
+                inst.images = data['images'][i].get('images')
+                i += 1
+                inst.save()
+
+        update_images(instance, validated_data)
+
+        instance.save()  # update_fields=fields, fields = ['beauty_title', 'title', ...]
         return instance
