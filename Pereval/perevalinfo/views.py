@@ -33,15 +33,37 @@ class PerevalUpdateModeratorAPI(generics.RetrieveUpdateAPIView):
 
 class PerevalRetrieveUpdateAPI(generics.RetrieveUpdateAPIView):
     """
-    Контроллер PUT-запроса на изменение добавленной информации пока в статусе "Новое"
+    Контроллер GET и PUT-запроса на изменение добавленной информации пока в статусе "Новое"
     """
     serializer_class = PerevalUpdateUsersSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = PerevalAdded.objects.filter(pk=self.kwargs['pk'])
-        print(queryset[0].status)
         return queryset
+
+    def update(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        NEW = PerevalAdded.Status.NEW.label  # 'Новый'
+        if not serializer.is_valid():
+            data = {'error': 'Что-то пошло не так ...', 'status': 'HTTP_400_BAD_REQUEST'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            if queryset[0].status != NEW:
+                data = {'state': 0, 'message': 'Изменение невозможно. Информация на проверке модератора или принята'}
+                return Response(data, status=status.HTTP_200_OK)
+            # other = {'state': 1, }
+            try:
+                serializer.save()  # Если добавить owner=other, то добавит в validated_data и можно будет пользовать
+                data = {'state': 1, 'message': 'Изменение прошло успешно'}
+                return Response(data, status=status.HTTP_200_OK)
+            except APIException as e:
+                # AssertionError
+                data = {'error': 'Серверу что-то не нравится ...', 'status': 'HTTP_500_INTERNAL_SERVER_ERROR',
+                        'detail': e.detail}
+                return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PerevalDetailAPI(APIView):

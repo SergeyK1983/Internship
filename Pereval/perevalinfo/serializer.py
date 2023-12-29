@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from .models import Users, PerevalAdded, Coords, DifficultyLevel, PerevalImages
@@ -77,10 +78,13 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         v_data = validated_data
-        ordered_dict_users = v_data['users_id']
-        ordered_dict_coord = v_data['coord_id']
-        ordered_dict_level = v_data['level_id']
-        ordered_dict_images = v_data.pop('images')
+        try:
+            ordered_dict_users = v_data['users_id']
+            ordered_dict_coord = v_data['coord_id']
+            ordered_dict_level = v_data['level_id']
+            ordered_dict_images = v_data.pop('images')
+        except KeyError:
+            raise APIException
 
         def users_create(ordered_dict):
             if Users.objects.filter(email=ordered_dict['email']).exists():
@@ -170,35 +174,45 @@ class PerevalUpdateModeratorSerializer(MixinPereval, serializers.ModelSerializer
 
 class PerevalUpdateUsersSerializer(MixinPereval, serializers.ModelSerializer):
     """
-    Для изменения добавленной информации пока в статусе "Новое"
+    Для изменения добавленной информации пока в статусе "Новое, кроме поля users_id"
     """
     users_id = UsersSerializer(label='Отправитель', read_only=True)
-    # images = ImagesSerializer(label='Фотография', many=True, read_only=True)
 
     class Meta(MixinPereval.Meta):
         read_only_fields = ['status', ]
 
     def update(self, instance, validated_data):
-        instance.beauty_title = validated_data['beauty_title']
-        instance.title = validated_data['title']
-        instance.other_titles = validated_data['other_titles']
-        instance.connect = validated_data['connect']
+        try:
+            instance.beauty_title = validated_data['beauty_title']
+            instance.title = validated_data['title']
+            instance.other_titles = validated_data['other_titles']
+            instance.connect = validated_data['connect']
+        except KeyError:
+            raise APIException("Ошибка обращения к БД. Не верные значения полей.")
 
         def update_coord(pereval, data):
             coord = Coords.objects.get(id=pereval.coord_id.pk)
-            coord.latitude = data['coord_id'].get('latitude')
-            coord.longitude = data['coord_id'].get('longitude')
-            coord.height = data['coord_id'].get('height')
+            try:
+                coord.latitude = data['coord_id'].get('latitude')
+                coord.longitude = data['coord_id'].get('longitude')
+                coord.height = data['coord_id'].get('height')
+            except KeyError:
+                raise APIException("Ошибка обращения к БД. Не верные значения полей.")
+            if (coord.latitude and coord.longitude and coord.height) is None:
+                raise APIException("Ошибка обращения к БД. Координаты не должны быть Null")
             coord.save()
 
         update_coord(instance, validated_data)
 
         def update_level(pereval, data):
             level = DifficultyLevel.objects.get(id=pereval.level_id.pk)
-            level.winter = data['level_id'].get('winter')
-            level.spring = data['level_id'].get('spring')
-            level.summer = data['level_id'].get('summer')
-            level.autumn = data['level_id'].get('autumn')
+            try:
+                level.winter = data['level_id'].get('winter')
+                level.spring = data['level_id'].get('spring')
+                level.summer = data['level_id'].get('summer')
+                level.autumn = data['level_id'].get('autumn')
+            except KeyError:
+                raise APIException("Ошибка обращения к БД. Не верные значения полей.")
             level.save()
 
         update_level(instance, validated_data)
@@ -208,11 +222,13 @@ class PerevalUpdateUsersSerializer(MixinPereval, serializers.ModelSerializer):
             query = PerevalImages.objects.filter(pereval_id=pereval.id)
             i = 0
             for inst in query:
-                inst.title = data['images'][i].get('title')
-                print(inst.title)
-                inst.images = data['images'][i].get('images')
-                i += 1
+                try:
+                    inst.title = data['images'][i].get('title')
+                    inst.images = data['images'][i].get('images')
+                except KeyError:
+                    raise APIException("Ошибка обращения к БД. Не верные значения полей.")
                 inst.save()
+                i += 1
 
         update_images(instance, validated_data)
 
