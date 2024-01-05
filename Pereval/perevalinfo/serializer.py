@@ -28,7 +28,7 @@ class CoordsSerializer(serializers.ModelSerializer):
 
 
 class DifficultyLevelSerializer(serializers.ModelSerializer):
-    winter = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Зима')  # source='get_winter_display'
+    winter = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Зима')
     spring = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Весна')
     summer = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Лето')
     autumn = serializers.ChoiceField(choices=DifficultyLevel.Levels.labels, label='Осень')
