@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import Users, PerevalAdded, Coords, DifficultyLevel, PerevalImages
+from .serializer import PerevalAddedSerializer
 
 
 class SetUpPerevalinfo(APITestCase):
@@ -78,6 +79,12 @@ class SetUpPerevalinfo(APITestCase):
         """ Тест на создание записи в БД """
         url = reverse(viewname='pereval-create')
         response = self.client.post(url, data=self.one_post_data, format='json')
+        serializer = PerevalAddedSerializer(data=self.one_post_data)
+        if serializer.is_valid():
+            serializer.save()
+            self.assertEquals(response.data, serializer.data)
+        else:
+            print('Тест на валидацию сериалайзера при создании записи БД не пройден')  # AssertionError
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
         self.assertEquals(response.data['status'], PerevalAdded.Status.NEW.label)
 
