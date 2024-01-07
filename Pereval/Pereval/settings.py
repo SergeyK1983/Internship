@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'perevalinfo.apps.PerevalinfoConfig',
 
+    'drf_yasg',
     'rest_framework',
     'django_filters',
 ]
