@@ -1,3 +1,5 @@
+import mock
+from django.core.files import File
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -10,6 +12,11 @@ from .serializer import PerevalAddedSerializer
 class SetUpPerevalinfo(APITestCase):
     def setUp(self):
         """ Исходные данные """
+        file_one_mock = mock.MagicMock(spec=File)
+        file_one_mock.name = 'photo1.jpg'
+        file_two_mock = mock.MagicMock(spec=File)
+        file_two_mock.name = 'photo2.jpg'
+
         self.some_user = Users.objects.create(full_name='Кузнецов Иван Сидорович', email='ivan@yandex.ru',
                                               phone='+79119008080')
         self.some_coord = Coords.objects.create(latitude=22.1, longitude=45.6, height=1200)
@@ -35,8 +42,10 @@ class SetUpPerevalinfo(APITestCase):
             level_id=self.some_level_em
         )
         self.some_image = PerevalImages.objects.create(images=None, title=None, pereval_id=self.some_pereval)
-        self.some_image_em = PerevalImages.objects.create(images=None, title="Фото 1", pereval_id=self.some_pereval_em)
-        self.some_image_em = PerevalImages.objects.create(images=None, title="Фото 2", pereval_id=self.some_pereval_em)
+        self.some_image_em = PerevalImages.objects.create(images=file_one_mock, title="Фото 1",
+                                                          pereval_id=self.some_pereval_em)
+        self.some_image_em = PerevalImages.objects.create(images=file_two_mock, title="Фото 2",
+                                                          pereval_id=self.some_pereval_em)
 
         self.some_data = {
             'id': self.some_pereval.id,
