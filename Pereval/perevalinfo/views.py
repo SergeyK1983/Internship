@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import PerevalAdded, Users
-from .serializer import PerevalAddedSerializer, PerevalIDListSerializer, PerevalIDDetailSerializer, UsersSerializer, \
+from .serializer import PerevalAddedSerializer, PerevalIDListSerializer, PerevalIDDetailSerializer, \
     PerevalUpdateModeratorSerializer, PerevalUpdateUsersSerializer
 
 
