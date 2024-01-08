@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.exceptions import APIException, NotFound
+from rest_framework.exceptions import APIException
 from rest_framework import generics, permissions, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -91,19 +91,20 @@ class PerevalEmailListAPI(generics.ListAPIView):
     """
     serializer_class = PerevalIDDetailSerializer
     permission_classes = [permissions.AllowAny]
-    # lookup_field = 'email'
 
     def get_queryset(self):
         try:
-            user = Users.objects.get(email=self.kwargs['email'])
-            queryset = user.pereval_user
+            # user = Users.objects.get(email=self.kwargs['email'])
+            # queryset = user.pereval_user
+            queryset = PerevalAdded.objects.filter(users_id__email=self.kwargs['email'])  # выдает пустой queryset, если адреса не существует
             return queryset
         except ObjectDoesNotExist:
             pass
 
     def get(self, request, *args, **kwargs):
-        if self.get_queryset() is None:
-            data = {'error': 'Такого почтового адреса не зарегистрировано!', 'status': 'HTTP_404_NOT_FOUND'}
+        if not list(self.get_queryset()):  # is None:
+            data = {'error': 'Такого почтового адреса не зарегистрировано либо записей нет.',
+                    'status': 'HTTP_404_NOT_FOUND'}
             return Response(data, status=status.HTTP_404_NOT_FOUND)
         return self.list(request, *args, **kwargs)
 
