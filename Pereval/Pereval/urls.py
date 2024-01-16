@@ -20,9 +20,10 @@ from django.conf.urls.static import static
 from django.conf import settings
 from .yasg import urlpatterns as doc_urls
 
-from .views import pageNotFound
+from .views import pageNotFound, index
 
 urlpatterns = [
+    path('', index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include('perevalinfo.urls')),
 ]
