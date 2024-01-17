@@ -26,6 +26,7 @@ urlpatterns = [
     path('', index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include('perevalinfo.urls')),
+    path('users/', include('userapp.urls')),
 ]
 
 urlpatterns += doc_urls  # swagger

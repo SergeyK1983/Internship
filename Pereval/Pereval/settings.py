@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
 
     'perevalinfo.apps.PerevalinfoConfig',
+    'userapp.apps.UserappConfig',
 
     'drf_yasg',
     'rest_framework',
