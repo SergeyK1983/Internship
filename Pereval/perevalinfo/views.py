@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import APIException
 from rest_framework import generics, permissions, status
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -115,9 +116,11 @@ class PerevalAddedCreate(generics.CreateAPIView):
     """
     serializer_class = PerevalAddedSerializer
     permission_classes = [permissions.AllowAny]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        serializer = PerevalAddedSerializer(data=request.data)
+        serializer = PerevalAddedSerializer(data=request.data)  # files=request.FILES
+        print('it view: ', request.data)
 
         if not serializer.is_valid():
             data = {'error': 'Что-то пошло не так ...', 'status': 'HTTP_400_BAD_REQUEST'}

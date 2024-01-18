@@ -1,3 +1,4 @@
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -44,9 +45,15 @@ class DifficultyLevelSerializer(serializers.ModelSerializer):
 
 
 class ImagesSerializer(serializers.ModelSerializer):
+    # images = serializers.ImageField(max_length=None, use_url=True)
+    # images = Base64ImageField()
+
     class Meta:
         model = PerevalImages
         fields = ['images', 'title']
+        # extra_kwargs = {
+        #     "images": {"max_length": None, "use_url": True}
+        # }
 
 
 class PerevalAddedSerializer(serializers.ModelSerializer):
@@ -78,6 +85,7 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         v_data = validated_data
+        print('it validated_data: ', v_data)
         try:
             ordered_dict_users = v_data['users_id']
             ordered_dict_coord = v_data['coord_id']
@@ -112,6 +120,8 @@ class PerevalAddedSerializer(serializers.ModelSerializer):
 
         for images_dict in ordered_dict_images:
             PerevalImages.objects.create(pereval_id=perevaladded, **images_dict)
+
+        # PerevalImages.objects.create(pereval_id=perevaladded, **ordered_dict_images)
 
         return perevaladded
 
